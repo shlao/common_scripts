@@ -3,7 +3,7 @@
 function collect_crictl_containers_logs() {
     for i in `crictl  ps |grep -v CONT|awk '{print $1}'`
     do
-    ls |grep "$i" 1>/dev/null
+    ls "$i"* >/dev/null 2>&1
     if [[ $? != 0 ]]; then
         name=$(crictl inspect $i| grep "\"name\":" | head -1 | awk '{print $NF}' | sed 's/"//g')
         $(crictl logs -f $i >"$i-$name-log.txt" 2>&1) &
@@ -14,11 +14,7 @@ function collect_crictl_containers_logs() {
 function collect_podman_containers_logs() {
     for i in `podman ps |grep -v CONT|awk '{print $1}'`
     do
-    ls |grep "$i" 1>/dev/null
-    if [[ $? != 0 ]]; then
-        name=$(podman inspect $i| grep "\"name\":" | head -1 | sed 's/"//g' | sed 's/,//g' | sed 's#/# #g' | awk '{print $NF}')
-        $(podman logs -f $i >"$i-$name-log.txt" 2>&1) &
-    fi
+        $(podman logs $i >"$i-log.txt" 2>&1) &
     done
 }
 
